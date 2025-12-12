@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הקצה החותך – קביעת תור</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-primary: #f0f0f0; --text-primary: #1e1e1e; --card-bg: #ffffff;
+            --gold-color: #a07a2c; --gold-border: #d4af37; --gold-shadow: rgba(212, 175, 55, 0.4);
+            --error-color: #ef4444; --slot-bg: #f3f4f6; --slot-border: #d1d5db;
+        }
+        .dark-mode {
+            --bg-primary: #0b0b0b; --text-primary: #e8e8e8; --card-bg: rgba(18, 18, 18, 0.7);
+            --gold-color: #d4af37; --gold-border: rgba(212,175,55,0.2); --gold-shadow: rgba(212, 175, 55, 0.7);
+            --slot-bg: rgba(30, 30, 30, 0.8); --slot-border: rgba(212,175,55,0.2);
+        }
+        body { font-family: 'Assistant', sans-serif; background: var(--bg-primary); color: var(--text-primary); transition: background 0.4s, color 0.4s; }
+        .gold { color: var(--gold-color); } 
+        .bg-dark-card { background: var(--card-bg); backdrop-filter: blur(5px); border: 1px solid var(--gold-border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.4s ease; }
+        .input-gold-border { border: 1px solid #ccc; background: var(--card-bg); color: var(--text-primary); transition: border-color 0.3s; }
+        .input-gold-border:focus { border-color: var(--gold-color); outline: none; box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.5); }
+        .btn-gold { background: linear-gradient(90deg, #d4af37, #e8c766, #d4af37); color: #000; font-weight: 800; border: none; box-shadow: 0 0 15px var(--gold-shadow); transition: all 0.4s ease; background-size: 200% 200%; }
+        .btn-gold:hover:not(:disabled) { background-position: right center; transform: translateY(-3px); }
+        .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+        .appointment-item { background: var(--card-bg); border: 1px solid var(--gold-border); padding: 1rem; margin-bottom: 0.75rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease; }
+        .action-btn { background: none; border: none; font-size: 1.3rem; cursor: pointer; margin-left: 0.5rem; transition: transform 0.3s; }
+        .delete-btn { color: var(--error-color); } .whatsapp-btn { color: #25D366; } .action-btn:hover { transform: scale(1.2); }
+        .time-group-title { color: var(--gold-color); font-size: 0.9rem; font-weight: bold; margin-top: 1rem; border-bottom: 1px solid var(--gold-border); }
+        .slot-btn { background: var(--slot-bg); border: 1px solid var(--slot-border); color: var(--text-primary); padding: 0.6rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; text-align: center; }
+        .slot-btn:hover:not(:disabled) { border-color: var(--gold-color); transform: translateY(-1px); }
+        .slot-btn.selected { background: var(--gold-color); color: #000; box-shadow: 0 0 10px var(--gold-shadow); }
+        .error-msg { color: var(--error-color); font-size: 0.85rem; margin-top: 0.2rem; height: 1.2rem; }
+        .validation-field { border-color: var(--error-color) !important; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3) !important; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--card-bg); padding: 2rem; border-radius: 1rem; text-align: center; width: 90%; max-width: 400px; color: var(--text-primary); }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+<button id="modeToggleBtn" class="fixed top-4 left-4 z-10 bg-gold text-black p-3 rounded-full font-bold shadow-lg hover:bg-yellow-400 transition duration-300"><i class="fas fa-moon ml-2"></i> מצב כהה</button>
+
+<div class="bg-dark-card max-w-xl w-full p-8 rounded-xl shadow-lg mb-8 relative">
+    <h1 class="text-5xl font-extrabold gold mb-8 text-center"><i class="fas fa-cut mr-3"></i>קביעת תור</h1>
+    <form id="appointmentForm" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block gold text-lg mb-2">שם מלא:</label><input type="text" id="fullName" placeholder="שם מלא" class="input-gold-border p-3 rounded-lg w-full" required><p id="fullNameError" class="error-msg"></p></div>
+            <div><label class="block gold text-lg mb-2">טלפון:</label><input type="tel" id="phone" placeholder="05X-XXXXXXX" class="input-gold-border p-3 rounded-lg w-full" required pattern="^05[0-9]{8}$"><p id="phoneError" class="error-msg"></p></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block gold text-lg mb-2">בחר ספר:</label>
+                <select id="barber" class="input-gold-border p-3 rounded-lg w-full" required>
+                    <option value="">-- בחר ספר --</option>
+                    <option value="אדם">אדם (מומחה תספורות)</option>
+                    <option value="ג'יי">ג'יי (מומחה זקנים)</option>
+                </select><p id="barberError" class="error-msg"></p>
+            </div>
+            <div><label class="block gold text-lg mb-2">בחר שירות:</label>
+                <select id="service" class="input-gold-border p-3 rounded-lg w-full" required>
+                    <option value="">-- בחר שירות --</option>
+                    <option value="תספורת גברים (45 דק')">תספורת גברים (45 דק')</option>
+                    <option value="זקן ועיצוב (30 דק')">זקן ועיצוב (30 דק')</option>
+                    <option value="תספורת וזקן (75 דק')">תספורת וזקן (75 דק')</option>
+                </select><p id="serviceError" class="error-msg"></p>
+            </div>
+        </div>
+        <div><label class="block gold text-lg mb-2">תאריך:</label><input type="date" id="date" class="input-gold-border p-3 rounded-lg w-full" required><p id="dateError" class="error-msg"></p></div>
+        <div class="mt-6">
+            <label class="block gold text-lg mb-2">שעות פנויות (<span id="slotDurationText">45 דק'</span>):</label>
+            <p id="availableSlotsMessage" class="text-sm text-gray-500 mb-2"></p>
+            <div id="slotsContainer"></div>
+            <p id="timeError" class="error-msg"></p>
+        </div>
+        <input type="hidden" id="selectedTime" value="">
+        <button type="submit" id="bookBtn" class="btn-gold p-4 rounded-lg w-full text-xl" disabled><i class="fas fa-calendar-alt ml-2"></i>אישור קביעת תור</button>
+    </form>
+    <p id="message" class="text-center mt-4 text-lg font-semibold hidden"></p>
+</div>
+
+<div class="bg-dark-card max-w-xl w-full p-8 rounded-xl shadow-lg mt-8">
+    <h2 class="text-3xl font-extrabold gold mb-6 text-center"><i class="fas fa-clipboard-list mr-3"></i>התורים שלי</h2>
+    <div id="myAppointmentsList"><p class="text-center text-gray-500 opacity-70 mt-4">אין תורים קבועים.</p></div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3 class="text-gold text-2xl font-bold mb-4">ביטול תור</h3>
+        <p class="mb-6" id="modalAppointmentDetails"></p>
+        <div class="flex justify-center gap-4">
+            <button id="confirmDeleteBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">בטל תור</button>
+            <button id="cancelDeleteBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">חזור</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const fullNameInput = document.getElementById('fullName');
+    const phoneInput = document.getElementById('phone');
+    const barberSelect = document.getElementById('barber');
+    const serviceSelect = document.getElementById('service');
+    const dateInput = document.getElementById('date');
+    const selectedTimeInput = document.getElementById('selectedTime');
+    const bookBtn = document.getElementById('bookBtn');
+    const message = document.getElementById('message');
+    const myAppointmentsList = document.getElementById('myAppointmentsList');
+    const slotsContainer = document.getElementById('slotsContainer');
+    const availableSlotsMessage = document.getElementById('availableSlotsMessage');
+    const slotDurationText = document.getElementById('slotDurationText');
+    const deleteModal = document.getElementById('deleteModal');
+    const body = document.body;
+
+    const BARBER_CONFIG = {
+        'אדם': { daysOff: [6], lunchStart: '13:00', lunchEnd: '13:45' },
+        'ג\'יי': { daysOff: [2, 6], lunchStart: '14:00', lunchEnd: '14:30' }
+    };
+    const OPENING_HOUR = 9; const CLOSING_HOUR = 20;
+    const SLOT_DURATION_MAP = { 'תספורת גברים (45 דק\')': 45, 'זקן ועיצוב (30 דק\')': 30, 'תספורת וזקן (75 דק\')': 75 };
+    const DEFAULT_SLOT_DURATION = 45;
+
+    const today = new Date();
+    dateInput.setAttribute('min', today.toISOString().split('T')[0]);
+    dateInput.value = today.toISOString().split('T')[0];
+
+    function handleUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const barberParam = urlParams.get('barber');
+        const serviceParam = urlParams.get('service');
+        if (barberParam) {
+            for (let i = 0; i < barberSelect.options.length; i++) {
+                if (barberSelect.options[i].value.includes(barberParam)) { barberSelect.selectedIndex = i; break; }
+            }
+        }
+        if (serviceParam) {
+            for (let i = 0; i < serviceSelect.options.length; i++) {
+                if (serviceSelect.options[i].value.includes(serviceParam)) { serviceSelect.selectedIndex = i; break; }
+            }
+        }
+        if (barberParam || serviceParam) generateAvailableSlots();
+    }
+
+    function minutesToTimeStr(minutes) {
+        const h = Math.floor(minutes / 60).toString().padStart(2, '0');
+        const m = (minutes % 60).toString().padStart(2, '0');
+        return `${h}:${m}`;
+    }
+    function timeStrToMinutes(timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+    }
+
+    function generateAvailableSlots() {
+        const selectedBarber = barberSelect.value;
+        const selectedDate = dateInput.value;
+        const selectedService = serviceSelect.value;
+        const durationMinutes = SLOT_DURATION_MAP[selectedService] || DEFAULT_SLOT_DURATION;
+        
+        slotDurationText.textContent = `${durationMinutes} דק'`;
+        slotsContainer.innerHTML = ''; availableSlotsMessage.textContent = '';
+        document.getElementById('timeError').textContent = ''; bookBtn.disabled = true;
+
+        if (!selectedBarber || !selectedDate) { availableSlotsMessage.textContent = 'בחר ספר ותאריך.'; return; }
+
+        const dateObj = new Date(selectedDate);
+        const dayOfWeek = dateObj.getDay();
+        const barberKey = Object.keys(BARBER_CONFIG).find(key => selectedBarber.includes(key));
+        const barberConfig = BARBER_CONFIG[barberKey];
+
+        if (barberConfig && barberConfig.daysOff.includes(dayOfWeek)) {
+            availableSlotsMessage.textContent = `הספר אינו עובד ביום זה.`; availableSlotsMessage.classList.add('text-red-500'); return;
+        } else availableSlotsMessage.classList.remove('text-red-500');
+
+        const bookedAppointments = JSON.parse(localStorage.getItem('bookings') || '[]').filter(b => b.barber === selectedBarber && b.date === selectedDate);
+        let currentTime = timeStrToMinutes(`${OPENING_HOUR}:00`);
+        const endTime = timeStrToMinutes(`${CLOSING_HOUR}:00`);
+        const lunchStart = barberConfig ? timeStrToMinutes(barberConfig.lunchStart) : -1;
+        const lunchEnd = barberConfig ? timeStrToMinutes(barberConfig.lunchEnd) : -1;
+        const slotsGroups = { morning: [], noon: [], evening: [] };
+        let foundSlots = false;
+
+        while (currentTime + durationMinutes <= endTime) {
+            const slotStartStr = minutesToTimeStr(currentTime);
+            const slotEndMinutes = currentTime + durationMinutes;
+            const slotDateTime = new Date(`${selectedDate}T${slotStartStr}`);
+            
+            if (slotDateTime < new Date()) { currentTime += 15; continue; }
+
+            let inLunch = false;
+            if (lunchStart !== -1) {
+                if ((currentTime >= lunchStart && currentTime < lunchEnd) || (slotEndMinutes > lunchStart && slotEndMinutes <= lunchEnd)) inLunch = true;
+            }
+
+            let isBooked = false;
+            for (const booking of bookedAppointments) {
+                const bStart = timeStrToMinutes(booking.time);
+                const bDuration = SLOT_DURATION_MAP[booking.service] || DEFAULT_SLOT_DURATION;
+                const bEnd = bStart + bDuration;
+                if ((bStart >= currentTime && bStart < slotEndMinutes) || (currentTime >= bStart && currentTime < bEnd)) { isBooked = true; break; }
+            }
+
+            if (!isBooked && !inLunch) {
+                const hour = Math.floor(currentTime / 60);
+                if (hour < 12) slotsGroups.morning.push(slotStartStr);
+                else if (hour < 16) slotsGroups.noon.push(slotStartStr);
+                else slotsGroups.evening.push(slotStartStr);
+                foundSlots = true;
+            }
+            currentTime += 15;
+        }
+
+        if (!foundSlots) availableSlotsMessage.textContent = 'לא נמצאו תורים פנויים לתאריך זה.';
+        else renderSlotsByGroups(slotsGroups);
+    }
+
+    function renderSlotsByGroups(groups) {
+        const createGroupHTML = (title, slots, icon) => {
+            if (slots.length === 0) return '';
+            const grid = slots.map(time => `<button type="button" class="slot-btn" onclick="selectTime(this, '${time}')">${time}</button>`).join('');
+            return `<div class="mb-4"><h4 class="time-group-title"><i class="${icon} ml-2"></i>${title}</h4><div class="grid grid-cols-4 gap-2">${grid}</div></div>`;
+        };
+        let html = createGroupHTML('בוקר', groups.morning, 'fas fa-sun') + createGroupHTML('צהריים', groups.noon, 'fas fa-cloud-sun') + createGroupHTML('ערב', groups.evening, 'fas fa-moon');
+        slotsContainer.innerHTML = html;
+    }
+
+    function selectTime(btn, time) {
+        document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected'); selectedTimeInput.value = time;
+        bookBtn.disabled = false; document.getElementById('timeError').textContent = '';
+    }
+
+    function sendWhatsApp(phone, fullName, date, time, barber) {
+        const message = `היי ${fullName}, נקבע לך תור ב"הקצה החותך" אצל ${barber} בתאריך ${date} בשעה ${time}.`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    }
+
+    function validateField(input, errorElement, msg) {
+        if (!input.value || (input.type === 'tel' && !input.value.match(input.pattern))) {
+            input.classList.add('validation-field'); errorElement.textContent = msg; return false;
+        }
+        input.classList.remove('validation-field'); errorElement.textContent = ''; return true;
+    }
+
+    function renderMyAppointments() {
+        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+        myAppointmentsList.innerHTML = '';
+        if (bookings.length === 0) { myAppointmentsList.innerHTML = '<p class="text-center text-gray-500 opacity-70 mt-4">אין תורים קבועים.</p>'; return; }
+        
+        bookings.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+        bookings.forEach((b, index) => {
+            const item = document.createElement('div');
+            item.className = 'appointment-item';
+            const isDark = body.classList.contains('dark-mode');
+            const txtMain = isDark ? 'text-gray-200' : 'text-gray-800';
+            
+            item.innerHTML = `<div><p class="text-xl font-bold gold">${b.fullName} / ${b.barber}</p><p class="${txtMain}">${b.date} | ${b.time}</p><p class="text-sm opacity-70">${b.service}</p></div>
+                <div><button class="action-btn whatsapp-btn" onclick="sendWhatsApp('${b.phone}', '${b.fullName}', '${b.date}', '${b.time}', '${b.barber}')"><i class="fab fa-whatsapp"></i></button>
+                <button class="action-btn delete-btn" onclick="confirmDelete(${index})"><i class="fas fa-trash-alt"></i></button></div>`;
+            myAppointmentsList.appendChild(item);
+        });
+    }
+
+    document.getElementById('appointmentForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        let isValid = true;
+        isValid &= validateField(fullNameInput, document.getElementById('fullNameError'), 'חובה למלא שם');
+        isValid &= validateField(phoneInput, document.getElementById('phoneError'), 'מספר לא תקין');
+        isValid &= validateField(barberSelect, document.getElementById('barberError'), 'בחר ספר');
+        isValid &= validateField(dateInput, document.getElementById('dateError'), 'בחר תאריך');
+        if (!selectedTimeInput.value) { document.getElementById('timeError').textContent = 'בחר שעה'; isValid = false; }
+        if (!isValid) return;
+
+        const newBooking = { fullName: fullNameInput.value, phone: phoneInput.value, barber: barberSelect.value, service: serviceSelect.value, date: dateInput.value, time: selectedTimeInput.value };
+        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+        bookings.push(newBooking);
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+        localStorage.setItem('userFullName', fullNameInput.value); localStorage.setItem('userPhone', phoneInput.value);
+
+        message.innerHTML = `<div class="text-green-500 mb-2">התור נקבע בהצלחה!</div><button onclick="sendWhatsApp('${newBooking.phone}', '${newBooking.fullName}', '${newBooking.date}', '${newBooking.time}', '${newBooking.barber}')" class="text-sm bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200"><i class="fab fa-whatsapp"></i> שלח אישור</button>`;
+        message.classList.remove('hidden');
+        renderMyAppointments(); generateAvailableSlots(); selectedTimeInput.value = ''; bookBtn.disabled = true;
+        document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+    });
+
+    [barberSelect, serviceSelect, dateInput].forEach(el => el.addEventListener('change', generateAvailableSlots));
+
+    let deleteIndex = -1;
+    function confirmDelete(index) {
+        deleteIndex = index;
+        const b = JSON.parse(localStorage.getItem('bookings'))[index];
+        document.getElementById('modalAppointmentDetails').textContent = `${b.barber}, ${b.date} ב-${b.time}`;
+        deleteModal.style.display = 'flex';
+    }
+    document.getElementById('confirmDeleteBtn').onclick = () => {
+        const bookings = JSON.parse(localStorage.getItem('bookings'));
+        bookings.splice(deleteIndex, 1);
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+        renderMyAppointments(); generateAvailableSlots(); deleteModal.style.display = 'none';
+    };
+    document.getElementById('cancelDeleteBtn').onclick = () => deleteModal.style.display = 'none';
+
+    const modeBtn = document.getElementById('modeToggleBtn');
+    modeBtn.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+        const isDark = body.classList.contains('dark-mode');
+        localStorage.setItem('mode', isDark ? 'dark' : 'light');
+        modeBtn.innerHTML = isDark ? '<i class="fas fa-sun ml-2"></i> מצב בהיר' : '<i class="fas fa-moon ml-2"></i> מצב כהה';
+        renderMyAppointments();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('mode') === 'dark') body.classList.add('dark-mode');
+        if (localStorage.getItem('userFullName')) fullNameInput.value = localStorage.getItem('userFullName');
+        if (localStorage.getItem('userPhone')) phoneInput.value = localStorage.getItem('userPhone');
+        handleUrlParams(); renderMyAppointments();
+    });
+</script>
+</body>
+</html>

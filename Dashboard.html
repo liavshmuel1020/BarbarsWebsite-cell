@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הקצה החותך – Dashboard ספרים</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* --- גופנים ו-Transition כללי --- */
+        body { font-family: 'Assistant', sans-serif; transition: background 0.7s ease, color 0.7s ease; }
+        
+        /* --- הגדרות מצב כהה (ברירת מחדל) --- */
+        .dark-mode { 
+            background: #0d0d0d; 
+            color: #e5e5e5; 
+            --tw-bg-opacity: 1;
+            background-color: rgba(13, 13, 13, var(--tw-bg-opacity));
+        }
+        .dark-mode .gold { color: #d4af37; }
+        .dark-mode .bg-dark-header { 
+            background: rgba(18, 18, 18, 0.9); 
+            backdrop-filter: blur(10px); 
+            border-bottom: 1px solid rgba(212,175,55,0.3);
+        }
+        .dark-mode .card { 
+            background: rgba(30, 30, 30, 0.7); 
+            border: 1px solid rgba(212,175,55,0.3); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .dark-mode select, .dark-mode input[type="date"] {
+            background: rgba(0,0,0,0.5); 
+            color: #fff;
+            border: 1px solid #444;
+        }
+
+        /* --- הגדרות מצב בהיר --- */
+        .light-mode { 
+            background: #f5f1e6; 
+            color: #1a1a1a; 
+            --tw-bg-opacity: 1;
+            background-color: rgba(245, 241, 230, var(--tw-bg-opacity));
+        }
+        .light-mode .gold { color: #c8af50; }
+        .light-mode .bg-dark-header { 
+            background: rgba(255, 255, 255, 0.95); 
+            border-bottom: 1px solid #c8af50;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .light-mode .card { 
+            background: #ffffff; 
+            border: 1px solid rgba(200,175,80,0.4); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .light-mode select, .light-mode input[type="date"] {
+            background: #ffffff; 
+            color: #1a1a1a;
+            border: 1px solid #ccc;
+        }
+        
+        /* --- סטיילינג קבוע (משותף לשני המצבים) --- */
+        .card { 
+            backdrop-filter: blur(8px); 
+            transition: all 0.3s ease; 
+            padding: 1.5rem; 
+            border-radius: 0.75rem; 
+            position: relative;
+        }
+        .card:hover { 
+            transform: translateY(-5px) scale(1.01); 
+            box-shadow: 0 8px 25px rgba(212,175,55,0.4); 
+        }
+
+        select, input[type="date"] { 
+            padding: 0.75rem; 
+            border-radius: 0.5rem; 
+            margin-bottom: 1rem; 
+            width: 100%; 
+            appearance: none; 
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+        }
+        
+        select:focus, input[type="date"]:focus {
+            border-color: #d4af37 !important;
+            box-shadow: 0 0 0 2px rgba(212,175,55,0.5);
+            outline: none;
+        }
+        
+        /* --- סטיילינג כפתורים --- */
+        .btn-action {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+        }
+        .btn-gold-outline {
+            border: 2px solid #d4af37;
+            color: #d4af37;
+            background: transparent;
+        }
+        .btn-gold-outline:hover {
+            background: rgba(212,175,55,0.15);
+            box-shadow: 0 0 12px rgba(212,175,55,0.7);
+            transform: translateY(-2px);
+        }
+        .btn-red {
+            background: #dc2626; 
+            color: white;
+            border: 2px solid #dc2626;
+        }
+        .btn-red:hover {
+            background: #b91c1c; 
+            border-color: #b91c1c;
+            box-shadow: 0 0 15px rgba(220,38,38,0.7);
+            transform: translateY(-2px);
+        }
+
+        /* כפתור מחיקה בודד (בתוך הכרטיס) */
+        .btn-delete-appointment {
+            background: none;
+            border: none;
+            color: #ef4444; 
+            font-size: 1.75rem;
+            cursor: pointer;
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            transition: color 0.3s ease, transform 0.2s ease;
+            z-index: 10;
+        }
+        .btn-delete-appointment:hover {
+            color: #dc2626; 
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        /* --- סטיילינג ספציפי ל-Tailwind עבור מצב בהיר --- */
+        .light-mode .text-gray-400 { color: #555; }
+        .light-mode .text-xl { color: #333; }
+        
+        /* כפתור הטוגל במצב כהה */
+        .dark-mode #theme-toggle.light-mode-btn {
+            border: 2px solid #a0a0a0;
+            color: #a0a0a0;
+        }
+        .dark-mode #theme-toggle.light-mode-btn:hover {
+            background: rgba(160, 160, 160, 0.1);
+            box-shadow: 0 0 10px rgba(160, 160, 160, 0.5);
+        }
+        
+        /* כפתור הטוגל במצב בהיר */
+        .light-mode #theme-toggle.light-mode-btn {
+            border: 2px solid #c8af50;
+            color: #c8af50;
+            background: transparent;
+        }
+        .light-mode #theme-toggle.light-mode-btn:hover {
+            background: rgba(200, 175, 80, 0.15);
+            box-shadow: 0 0 12px rgba(200, 175, 80, 0.5);
+        }
+
+        /* אנימציה לתור חדש */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .new-item-animate {
+            animation: fadeInScale 0.5s ease-out forwards;
+            border: 2px solid var(--gold-primary);
+        }
+
+    </style>
+</head>
+<body class="dark-mode min-h-screen">
+
+<header class="py-6 text-center border-b border-yellow-600/20 relative bg-dark-header shadow-lg sticky top-0 z-20">
+    <h1 class="text-5xl font-extrabold gold mb-2">
+        <i class="fas fa-calendar-alt mr-3"></i>Dashboard ספרים
+    </h1>
+    <p class="text-gray-400 text-xl">צפייה וניהול כל התורים</p>
+    
+    <div class="absolute top-24 md:top-8 left-1/2 md:left-24 transform -translate-x-1/2 md:translate-x-0 flex items-center gap-2">
+        <span class="relative flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+        </span>
+        <span class="text-sm text-green-500 font-bold">מערכת חיה</span>
+    </div>
+
+    <button id="theme-toggle"
+        class="absolute top-6 left-6 px-4 py-2 rounded-lg btn-action btn-gold-outline text-lg light-mode-btn">
+        <i class="fas fa-sun ml-2" id="theme-icon"></i><span id="theme-text">מצב בהיר</span>
+    </button>
+
+    <button id="logoutBtn"
+        class="absolute top-6 right-6 px-4 py-2 rounded-lg btn-action btn-gold-outline text-lg">
+        <i class="fas fa-sign-out-alt ml-2"></i>יציאה
+    </button>
+</header>
+
+<main class="max-w-6xl mx-auto mt-10 px-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-4 rounded-lg bg-transparent">
+        <div>
+            <label class="gold text-xl mb-2 block font-semibold"><i class="fas fa-user-tie ml-2"></i> סינון לפי ספר:</label>
+            <select id="barberFilter">
+                <option value="">— כל הספרים —</option>
+                <option value="אדם">אדם</option>
+                <option value="ג'יי">ג'יי</option>
+            </select>
+        </div>
+        <div>
+            <label class="gold text-xl mb-2 block font-semibold"><i class="fas fa-calendar-day ml-2"></i> סינון לפי תאריך:</label>
+            <input type="date" id="dateFilter">
+        </div>
+        <div class="flex items-end">
+            <button id="clearAllAppointmentsBtn" class="btn-action btn-red w-full">
+                <i class="fas fa-eraser ml-2"></i>מחק את כל התורים
+            </button>
+        </div>
+    </div>
+
+    <div id="appointmentsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+    </div>
+
+    <p id="noAppointmentsMsg" class="text-3xl text-center text-gray-500 mt-20 hidden font-light">
+        <i class="fas fa-exclamation-circle mb-4 block"></i>
+        לא נמצאו תורים תואמים לסינון.
+    </p>
+</main>
+
+<script>
+    // בדיקה אם המשתמש נכנס
+    if (sessionStorage.getItem('loggedIn') !== 'true') {
+        alert('נא להיכנס קודם!');
+        window.location.href = 'login.html';
+    }
+
+    // אלמנטים
+    const body = document.body;
+    const themeBtn = document.getElementById("theme-toggle");
+    const themeIcon = document.getElementById("theme-icon");
+    const themeText = document.getElementById("theme-text");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const appointmentsList = document.getElementById('appointmentsList');
+    const barberFilter = document.getElementById('barberFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    const clearAllAppointmentsBtn = document.getElementById('clearAllAppointmentsBtn');
+    const noAppointmentsMsg = document.getElementById('noAppointmentsMsg');
+
+    // קורא את כל ההזמנות הקיימות
+    let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+
+    // ==========================================
+    // הקסם קורה כאן: האזנה לשינויים ב-Storage
+    // ==========================================
+    window.addEventListener('storage', (event) => {
+        // בודק אם השינוי קרה במפתח 'bookings'
+        if (event.key === 'bookings') {
+            console.log("זוהה עדכון תורים!");
+            // טוען מחדש את הנתונים מהזיכרון
+            bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            // מרנדר מחדש את המסך
+            renderAppointments(barberFilter.value, dateFilter.value);
+            
+            // השמעת צליל עדין (אופציונלי - אם הדפדפן מרשה)
+            // const audio = new Audio('notification.mp3'); audio.play().catch(e => {});
+        }
+    });
+
+    // פונקציית עדכון מצב כהה/בהיר
+    function updateThemeUI(isDarkMode) {
+        if (isDarkMode) {
+            body.classList.remove("light-mode");
+            body.classList.add("dark-mode");
+            themeText.textContent = "מצב בהיר";
+            themeIcon.classList.remove("fa-moon");
+            themeIcon.classList.add("fa-sun");
+            themeBtn.classList.add("btn-gold-outline");
+            themeBtn.classList.remove("btn-red-outline");
+            localStorage.setItem("theme", "dark");
+        } else {
+            body.classList.remove("dark-mode");
+            body.classList.add("light-mode");
+            themeText.textContent = "מצב כהה";
+            themeIcon.classList.remove("fa-sun");
+            themeIcon.classList.add("fa-moon");
+            themeBtn.classList.remove("btn-gold-outline");
+            themeBtn.classList.add("btn-red-outline");
+            localStorage.setItem("theme", "light");
+        }
+        renderAppointments(barberFilter.value, dateFilter.value); 
+    }
+
+    // יישום ערכת נושא שמורה
+    if (localStorage.getItem("theme") === "light") {
+        updateThemeUI(false);
+    } else {
+        updateThemeUI(true);
+    }
+
+    themeBtn.addEventListener("click", () => {
+        updateThemeUI(!body.classList.contains("dark-mode"));
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        if (confirm('האם אתה בטוח שברצונך להתנתק?')) {
+            sessionStorage.removeItem('loggedIn');
+            window.location.href = 'login.html';
+        }
+    });
+
+    function deleteAppointment(indexToDelete) {
+        if (confirm('האם אתה בטוח שברצונך למחוק תור זה?')) {
+            const currentFilteredBookings = getFilteredBookings(barberFilter.value, dateFilter.value);
+            const bookingToDelete = currentFilteredBookings[indexToDelete];
+            
+            const originalIndex = bookings.findIndex(b => 
+                b.fullName === bookingToDelete.fullName && 
+                b.date === bookingToDelete.date && 
+                b.time === bookingToDelete.time
+            );
+
+            if (originalIndex > -1) {
+                bookings.splice(originalIndex, 1);
+                localStorage.setItem('bookings', JSON.stringify(bookings)); // זה יקפיץ את האירוע גם בחלונות אחרים
+                renderAppointments(barberFilter.value, dateFilter.value); 
+            }
+        }
+    }
+    
+    function getFilteredBookings(barber = "", date = "") {
+        let filtered = [...bookings];
+        if (barber !== "") filtered = filtered.filter(b => b.barber === barber);
+        if (date !== "") filtered = filtered.filter(b => b.date === date);
+
+        filtered.sort((a, b) => {
+            const dateA = new Date(`${a.date}T${a.time}`);
+            const dateB = new Date(`${b.date}T${b.time}`);
+            return dateA - dateB;
+        });
+        return filtered;
+    }
+
+    function renderAppointments(barber = "", date = "") {
+        appointmentsList.innerHTML = "";
+        const filteredBookings = getFilteredBookings(barber, date);
+        const isLight = body.classList.contains('light-mode');
+
+        if (filteredBookings.length === 0) {
+            appointmentsList.innerHTML = "";
+            noAppointmentsMsg.classList.remove('hidden');
+            return;
+        }
+
+        noAppointmentsMsg.classList.add('hidden');
+        
+        filteredBookings.forEach((b, index) => {
+            const card = document.createElement('div');
+            card.classList.add('card', 'rtl', 'new-item-animate'); // הוספתי אנימציה
+            
+            const textColorClass = isLight ? 'text-gray-700' : 'text-gray-400';
+            const strongTextColorClass = isLight ? 'text-gray-900' : 'text-white';
+            const iconColorClass = isLight ? 'text-[#c8af50]' : 'text-[#d4af37]';
+            const goldTextClass = isLight ? 'text-[#c8af50]' : 'text-[#d4af37]';
+
+            card.innerHTML = `
+                <button class="btn-delete-appointment" data-index="${index}" title="מחק תור">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                <p class="text-xs ${textColorClass} mb-1">
+                    <i class="fas fa-cut ml-1"></i>
+                    ${b.service}
+                </p>
+                <h2 class="text-3xl font-extrabold ${goldTextClass} mb-4">${b.fullName}</h2>
+                <div class="space-y-3 mt-4 text-lg">
+                    <p class="${textColorClass}"><i class="fas fa-calendar-day ml-2 ${iconColorClass}"></i> תאריך: <span class="font-bold ${strongTextColorClass}">${b.date}</span></p>
+                    <p class="${textColorClass}"><i class="fas fa-clock ml-2 ${iconColorClass}"></i> שעה: <span class="font-bold ${strongTextColorClass}">${b.time}</span></p>
+                    <p class="${textColorClass}"><i class="fas fa-user-tie ml-2 ${iconColorClass}"></i> ספר: <span class="${strongTextColorClass}">${b.barber}</span></p>
+                    <p class="${textColorClass}"><i class="fas fa-phone ml-2 ${iconColorClass}"></i> טלפון: <span class="${strongTextColorClass}" dir="ltr">${b.phone}</span></p>
+                </div>
+            `;
+            appointmentsList.appendChild(card);
+        });
+
+        document.querySelectorAll('.btn-delete-appointment').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const indexToDelete = parseInt(e.currentTarget.dataset.index);
+                deleteAppointment(indexToDelete);
+            });
+        });
+    }
+
+    barberFilter.addEventListener('change', () => {
+        if (barberFilter.value !== "") dateFilter.value = "";
+        renderAppointments(barberFilter.value, dateFilter.value);
+    });
+    
+    dateFilter.addEventListener('change', () => {
+        if (dateFilter.value !== "") barberFilter.value = "";
+        renderAppointments(barberFilter.value, dateFilter.value);
+    });
+
+    clearAllAppointmentsBtn.addEventListener('click', () => {
+        if (confirm('אזהרה! האם אתה בטוח שברצונך למחוק את כל התורים?')) {
+            localStorage.removeItem('bookings');
+            bookings = [];
+            renderAppointments();
+            alert('כל התורים נמחקו בהצלחה!');
+        }
+    });
+
+    // טעינה ראשונית
+    renderAppointments();
+</script>
+
+</body>
+</html>

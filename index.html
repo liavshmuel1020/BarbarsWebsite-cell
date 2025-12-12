@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הקצה החותך - ברברשופ פרימיום</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #f5f1e6;
+            --text-body: #1a1a1a;
+            --gold-primary: #a07a2c;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-border: rgba(200, 175, 80, 0.4);
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+        .dark-mode {
+            --bg-body: #0b0b0b;
+            --text-body: #e8e8e8;
+            --gold-primary: #d4af37;
+            --card-bg: rgba(30, 30, 30, 0.85);
+            --card-border: rgba(212,175,55,0.3);
+            --shadow-color: rgba(212,175,55,0.15);
+        }
+
+        body {
+            font-family: 'Assistant', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-body);
+            transition: background 0.4s, color 0.4s;
+            scroll-behavior: smooth;
+        }
+        h1, h2, h3 { font-family: 'Rubik', sans-serif; }
+        .gold { color: var(--gold-primary); }
+
+        .btn-gold {
+            background: linear-gradient(90deg, #d4af37, #e8c766, #d4af37);
+            color: #000;
+            font-weight: 800;
+            border: 1px solid #f5e7b5;
+            box-shadow: 0 0 15px var(--shadow-color);
+            background-size: 200% 200%;
+            transition: all 0.4s ease-in-out;
+        }
+        .btn-gold:hover { 
+            background-position: right; 
+            box-shadow: 0 0 35px var(--gold-primary);
+            transform: translateY(-2px);
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--card-border);
+            transition: 0.4s ease-in-out;
+            cursor: pointer;
+        }
+        .card:hover { 
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px var(--shadow-color); 
+            border: 1px solid var(--gold-primary);
+        }
+
+        .dark-mode .hero-overlay { background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.95)); }
+        .light-mode .hero-overlay { background: linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.9)); }
+        
+        .nav-transparent { background: transparent; border-bottom: none; transition: background 0.4s ease, border 0.4s ease; }
+        .nav-scrolled { background: var(--bg-body); border-bottom: 1px solid var(--gold-primary); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
+        .dark-mode .nav-scrolled { background: #0b0b0b; }
+
+        .fade-in-section { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .fade-in-section.is-visible { opacity: 1; transform: translateY(0); }
+
+        .gallery-item { overflow: hidden; border-radius: 1rem; position: relative; }
+        .gallery-item img { transition: transform 0.5s ease; }
+        .gallery-item:hover img { transform: scale(1.1); }
+
+        .accordion-content { transition: max-height 0.3s ease-out, padding 0.3s ease; max-height: 0; overflow: hidden; }
+        .accordion-item.active .accordion-content { max-height: 200px; padding-top: 1rem; }
+        .accordion-item.active .accordion-icon { transform: rotate(180deg); }
+
+        .whatsapp-float {
+            position: fixed; bottom: 30px; left: 30px; z-index: 100;
+            background-color: #25d366; color: white; border-radius: 50%;
+            padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: all 0.3s ease;
+        }
+        .whatsapp-float:hover { transform: scale(1.1); box-shadow: 0 6px 16px rgba(37, 211, 102, 0.4); }
+    </style>
+</head>
+
+<body class="dark-mode">
+
+<nav id="navbar" class="fixed top-0 w-full z-50 px-4 nav-transparent">
+    <div class="max-w-7xl mx-auto flex items-center justify-between p-4">
+        <a href="#" class="text-3xl md:text-4xl font-extrabold gold tracking-widest hover:opacity-80 transition duration-300">הקצה החותך</a>
+        <div class="hidden md:flex space-x-6 space-x-reverse text-gray-300 text-lg items-center">
+            <a href="#services" class="hover:gold transition flex items-center"><i data-lucide="scissors" class="w-4 h-4 ml-1"></i> שירותים</a>
+            <a href="#gallery" class="hover:gold transition flex items-center"><i data-lucide="image" class="w-4 h-4 ml-1"></i> גלריה</a>
+            <a href="#barbers" class="hover:gold transition flex items-center"><i data-lucide="user-check" class="w-4 h-4 ml-1"></i> הצוות</a>
+            <a href="#contact" class="hover:gold transition flex items-center"><i data-lucide="map-pin" class="w-4 h-4 ml-1"></i> הגעה</a>
+            <button id="theme-toggle" class="px-3 py-1 rounded-lg border border-yellow-600/40 text-yellow-400 hover:bg-yellow-600/20 transition text-sm">🌙</button>
+            <a href="client_booking.html" class="btn-gold px-4 py-2 rounded-lg text-base font-bold">הזמן תור</a>
+        </div>
+        <div class="md:hidden flex items-center gap-4">
+             <button id="mobile-theme-toggle" class="text-xl">🌙</button>
+            <a href="client_booking.html" class="btn-gold px-3 py-2 rounded-lg text-sm"><i data-lucide="calendar" class="w-5 h-5"></i></a>
+        </div>
+    </div>
+</nav>
+
+<section class="relative h-[100vh] w-full overflow-hidden flex items-center justify-center">
+    <img id="hero-image" src="https://static.wixstatic.com/media/0f4886_74b8e6d0a32045f1b826731a52c001f3~mv2.jpg/v1/fill/w_1920,h_1080,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/0f4886_74b8e6d0a32045f1b826731a52c001f3~mv2.jpg" class="absolute inset-0 w-full h-full object-cover" data-speed="0.3" alt="Barbershop Background" />
+    <div class="absolute inset-0 hero-overlay flex flex-col justify-center items-center text-center px-6">
+        <h2 class="text-6xl md:text-8xl font-black gold drop-shadow-lg tracking-wider animate-pulse">הקצה החותך</h2>
+        <h3 class="text-2xl md:text-4xl text-gray-100 mt-4 font-bold drop-shadow-md">ברברשופ פרימיום. סטייל ברמה אחרת.</h3>
+        <p class="text-gray-300 mt-6 text-xl md:text-2xl max-w-3xl leading-relaxed">תספורות יוקרתיות, גילוח מקצועי ושירות ברמה שלא הכרת.</p>
+        <div class="flex flex-col md:flex-row gap-4 mt-12">
+            <a href="client_booking.html" class="btn-gold px-10 py-4 rounded-full text-2xl shadow-2xl hover:scale-105 transform transition duration-500">
+                <i data-lucide="calendar-plus" class="w-6 h-6 ml-2 inline"></i> הזמן תור בקליק
+            </a>
+            <a href="#gallery" class="px-10 py-4 rounded-full text-2xl border border-white/30 text-white hover:bg-white/10 transition backdrop-blur-sm">צפה בעבודות</a>
+        </div>
+    </div>
+</section>
+
+<section id="services" class="fade-in-section max-w-7xl mx-auto mt-24 px-4 py-16">
+    <h2 class="text-4xl md:text-6xl font-black gold text-center mb-16 border-b-4 border-gold/50 inline-block mx-auto pb-2 tracking-wide w-full md:w-auto">
+        <i data-lucide="scissors" class="w-8 h-8 md:w-10 md:h-10 inline-block ml-3"></i> מחירון ושירותים
+    </h2>
+    <div id="services-grid" class="grid md:grid-cols-3 gap-8"></div>
+</section>
+
+<section id="gallery" class="fade-in-section max-w-7xl mx-auto mt-20 px-4 py-16 bg-black/5 dark:bg-white/5 rounded-3xl">
+    <h2 class="text-4xl md:text-6xl font-black gold text-center mb-12">
+        <i data-lucide="camera" class="w-8 h-8 md:w-10 md:h-10 inline-block ml-3"></i> תיק העבודות
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="gallery-item aspect-square bg-gray-800"><img src="https://images.unsplash.com/photo-1599351431202-6e0000a7413d?w=500&auto=format&fit=crop&q=60" class="w-full h-full object-cover" alt="Haircut 1"></div>
+        <div class="gallery-item aspect-square bg-gray-800"><img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=500&auto=format&fit=crop&q=60" class="w-full h-full object-cover" alt="Beard Trim"></div>
+        <div class="gallery-item aspect-square bg-gray-800"><img src="https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=500&auto=format&fit=crop&q=60" class="w-full h-full object-cover" alt="Haircut 2"></div>
+        <div class="gallery-item aspect-square bg-gray-800"><img src="https://images.unsplash.com/photo-1503951914875-befbb6470523?w=500&auto=format&fit=crop&q=60" class="w-full h-full object-cover" alt="Atmosphere"></div>
+    </div>
+</section>
+
+<section id="barbers" class="fade-in-section max-w-7xl mx-auto mt-24 px-4 py-16">
+    <h2 class="text-4xl md:text-6xl font-black gold text-center mb-16">
+        <i data-lucide="users" class="w-8 h-8 md:w-10 md:h-10 inline-block ml-3"></i> הנבחרת שלנו
+    </h2>
+    <div id="barbers-grid" class="grid md:grid-cols-2 gap-12"></div>
+</section>
+
+<section id="testimonials" class="fade-in-section max-w-6xl mx-auto mt-24 px-4 py-16">
+    <h2 class="text-4xl md:text-5xl font-bold gold text-center mb-12">מה הלקוחות אומרים</h2>
+    <div id="testimonials-grid" class="grid md:grid-cols-3 gap-8"></div>
+</section>
+
+<section id="faq" class="fade-in-section max-w-4xl mx-auto mt-24 px-4 mb-24">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-8 opacity-80">שאלות נפוצות</h2>
+    <div class="space-y-4" id="faq-container"></div>
+</section>
+
+<section id="contact" class="fade-in-section max-w-7xl mx-auto mt-20 px-4 py-16">
+    <h2 class="text-4xl md:text-6xl font-black gold text-center mb-10 tracking-wide">
+        <i data-lucide="map-pin" class="w-8 h-8 md:w-10 md:h-10 inline-block ml-3"></i> מיקום ושעות
+    </h2>
+    <div class="grid md:grid-cols-2 gap-8 items-stretch">
+        <div class="card p-10 rounded-2xl shadow-xl flex flex-col justify-center">
+            <p class="text-2xl font-bold mb-6 flex items-center"><i data-lucide="map-pin" class="w-6 h-6 ml-3 text-gold"></i> אלנבי 45, תל אביב</p>
+            <p class="text-2xl mb-6 flex items-center"><i data-lucide="phone" class="w-6 h-6 ml-3 text-gold"></i> <a href="tel:0520000000" class="hover:underline hover:gold transition">052-000-0000</a></p>
+            <p class="text-xl mb-8 font-semibold text-current/90 leading-relaxed"><span class="block mb-2 underline decoration-gold/50">שעות פעילות:</span> א' - ה': 09:00 - 20:00 <br> יום ו': 08:00 - 14:00</p>
+            <a href="https://waze.com/ul?ll=32.066158,34.770668&navigate=yes" target="_blank" class="btn-gold px-6 py-3 rounded-lg text-xl text-center mb-4"><i data-lucide="navigation" class="w-5 h-5 ml-2 inline"></i> נווט עם Waze</a>
+        </div>
+        <div class="card p-2 rounded-2xl shadow-xl overflow-hidden h-[400px] md:h-auto">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3380.992219808388!2d34.76847832448398!3d32.06615797396781!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d4b7dcd0528c3%3A0x629577df10766348!2sAllenby%20St%2045%2C%20Tel%20Aviv-Yafo!5e0!3m2!1sen!2sil!4v1700000000000!5m2!1sen!2sil" width="100%" height="100%" style="border:0; border-radius: 12px; filter: grayscale(20%) contrast(1.2);" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </div>
+</section>
+
+<footer class="text-center text-gray-500 py-10 mt-20 border-t border-yellow-600/20 bg-black/20">
+    <p class="mb-2">פותח ע"י ברברשופ פרימיום</p>
+    © 2024 הקצה החותך – כל הזכויות שמורות
+</footer>
+
+<a href="https://wa.me/972520000000" target="_blank" class="whatsapp-float" aria-label="Chat on WhatsApp"><i data-lucide="message-circle" class="w-8 h-8"></i></a>
+
+<script>
+    lucide.createIcons();
+    const body = document.body;
+    const themeBtn = document.getElementById("theme-toggle");
+    const mobileThemeBtn = document.getElementById("mobile-theme-toggle");
+    const navbar = document.getElementById("navbar");
+
+    // DATA: Note the 'bookingValue' matches exactly the select options in booking.html
+    const SERVICES = [
+        { name: "פייד מדויק", bookingValue: "תספורת גברים (45 דק')", duration: "45 דק'", price: 120, description: "התספורת הקלאסית שלנו, עם מעבר צבע נקי ומדויק." },
+        { name: "גילוח מלכותי", bookingValue: "זקן ועיצוב (30 דק')", duration: "30 דק'", price: 100, description: "חוויית גילוח עם סכין, מגבות חמות וקרמים." },
+        { name: "החבילה המלאה", bookingValue: "תספורת וזקן (75 דק')", duration: "75 דק'", price: 200, description: "תספורת וגילוח/עיצוב זקן. המהפך המושלם." }
+    ];
+    const BARBERS = [
+        { name: "אדם כהן", role: "מאסטר ברבר", img: "https://randomuser.me/api/portraits/men/32.jpg", specialization: "מומחה לשיער ארוך וקלאסיקות." },
+        { name: "ג'יי סמית", role: "מעצב ראשי", img: "https://randomuser.me/api/portraits/men/44.jpg", specialization: "אמן הפיידים ועיצובי זקן מודרניים." }
+    ];
+    const TESTIMONIALS = [
+        { name: "עומר לוי", text: "השירות הכי טוב שקיבלתי בתל אביב. אדם הוא אמן אמיתי.", stars: 5 },
+        { name: "דניאל", text: "אווירה מחשמלת, ויסקי טוב ותספורת מדויקת. שווה כל שקל.", stars: 5 },
+        { name: "יוני ג.", text: "הגילוח הקלאסי החזיר אותי לחיים. ממליץ בחום על ג'יי.", stars: 5 }
+    ];
+    const FAQ = [
+        { q: "האם צריך לקבוע תור מראש?", a: "כן, אנחנו עובדים בשיטת תורים בלבד." },
+        { q: "האם יש חניה באזור?", a: "יש חניון בתשלום בצמוד למספרה (חניון אלנבי)." },
+        { q: "איך ניתן לשלם?", a: "אנחנו מקבלים אשראי, מזומן, ואפליקציות תשלום." }
+    ];
+
+    // THEME TOGGLE
+    function toggleTheme() {
+        if (body.classList.contains("dark-mode")) {
+            body.classList.remove("dark-mode"); body.classList.add("light-mode");
+            localStorage.setItem("theme", "light"); themeBtn.textContent = "☀";
+            if(mobileThemeBtn) mobileThemeBtn.textContent = "☀";
+        } else {
+            body.classList.remove("light-mode"); body.classList.add("dark-mode");
+            localStorage.setItem("theme", "dark"); themeBtn.textContent = "🌙";
+            if(mobileThemeBtn) mobileThemeBtn.textContent = "🌙";
+        }
+    }
+    themeBtn.addEventListener("click", toggleTheme);
+    if(mobileThemeBtn) mobileThemeBtn.addEventListener("click", toggleTheme);
+    if (localStorage.getItem("theme") === "light") {
+        body.classList.remove("dark-mode"); body.classList.add("light-mode");
+        themeBtn.textContent = "☀"; if(mobileThemeBtn) mobileThemeBtn.textContent = "☀";
+    }
+
+    // RENDER CONTENT
+    function renderContent() {
+        document.getElementById('services-grid').innerHTML = SERVICES.map(s => `
+            <div class="card p-8 rounded-2xl text-center shadow-xl hover:shadow-2xl transition group">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-500/20 pb-4">
+                    <h3 class="text-2xl font-bold gold tracking-wider">${s.name}</h3>
+                    <span class="text-xl font-black bg-yellow-600/20 px-3 py-1 rounded text-gold">${s.price}₪</span>
+                </div>
+                <div class="mb-4"><span class="text-sm text-gray-500 bg-gray-200/10 px-2 py-1 rounded inline-block">⏱ ${s.duration}</span></div>
+                <p class="text-lg text-current/80 mb-6 h-16">${s.description}</p>
+                <a href="client_booking.html?service=${encodeURIComponent(s.bookingValue)}" class="btn-gold px-4 py-3 rounded-lg w-full block text-lg group-hover:bg-right transition-all">קבע תור</a>
+            </div>`).join('');
+
+        document.getElementById('barbers-grid').innerHTML = BARBERS.map(b => {
+            const firstName = b.name.split(' ')[0]; // Sends "אדם" instead of "אדם כהן"
+            return `<div class="card p-8 rounded-2xl flex flex-col md:flex-row items-center gap-6 shadow-xl">
+                <img src="${b.img}" alt="${b.name}" class="w-32 h-32 rounded-full border-2 border-gold object-cover shadow-lg">
+                <div class="text-center md:text-right flex-1">
+                    <h3 class="text-3xl font-black gold mb-1">${b.name}</h3>
+                    <p class="text-sm text-gray-400 mb-3 uppercase tracking-widest">${b.role}</p>
+                    <p class="text-lg text-current/80 mb-4">${b.specialization}</p>
+                    <a href="client_booking.html?barber=${encodeURIComponent(firstName)}" class="text-gold font-bold hover:underline flex items-center justify-center md:justify-start">הזמן תור אצל ${firstName} <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i></a>
+                </div>
+            </div>`}).join('');
+
+        document.getElementById('testimonials-grid').innerHTML = TESTIMONIALS.map(t => `
+            <div class="card p-6 rounded-xl shadow-md border-t-4 border-gold">
+                <div class="flex text-yellow-500 mb-3">${Array(t.stars).fill('<i data-lucide="star" class="w-4 h-4 fill-current"></i>').join('')}</div>
+                <p class="italic text-lg mb-4 opacity-80">"${t.text}"</p>
+                <p class="font-bold text-gold text-sm border-t border-gray-600/20 pt-2 flex items-center"><i data-lucide="user" class="w-3 h-3 ml-2"></i> ${t.name}</p>
+            </div>`).join('');
+
+        document.getElementById('faq-container').innerHTML = FAQ.map(item => `
+            <div class="accordion-item card rounded-lg overflow-hidden border border-gray-500/10">
+                <button class="w-full text-right p-4 font-bold text-lg flex justify-between items-center hover:bg-white/5 transition" onclick="toggleAccordion(this)">
+                    ${item.q} <i data-lucide="chevron-down" class="accordion-icon w-5 h-5 text-gold"></i>
+                </button>
+                <div class="accordion-content px-4 bg-black/5 dark:bg-black/20"><p class="pb-4 opacity-80">${item.a}</p></div>
+            </div>`).join('');
+        lucide.createIcons();
+    }
+
+    function toggleAccordion(btn) { btn.parentElement.classList.toggle('active'); }
+
+    const heroImage = document.getElementById('hero-image');
+    function handleScroll() {
+        if (window.scrollY > 50) { navbar.classList.remove('nav-transparent'); navbar.classList.add('nav-scrolled'); } 
+        else { navbar.classList.add('nav-transparent'); navbar.classList.remove('nav-scrolled'); }
+        if (heroImage) heroImage.style.transform = `translateY(${window.scrollY * 0.3}px)`;
+        document.querySelectorAll('.fade-in-section').forEach(section => {
+            if (section.getBoundingClientRect().top < window.innerHeight * 0.8) section.classList.add('is-visible');
+        });
+    }
+    window.addEventListener('scroll', handleScroll);
+    document.addEventListener('DOMContentLoaded', () => { renderContent(); handleScroll(); });
+</script>
+</body>
+</html>
